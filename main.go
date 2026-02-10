@@ -1,6 +1,8 @@
 package main
 
 import (
+  "os"
+  "os/exec"
   "flag"
   "log"
 
@@ -18,6 +20,7 @@ func main() {
 
   flag.Parse()
 
+  var before *exec.Cmd
   matchOptions := make(
     []dbus.MatchOption,
     0,
@@ -26,6 +29,11 @@ func main() {
   for i := 0; i+1 < flag.NArg(); i += 2 {
     key := flag.Arg(i)
     value := flag.Arg(i+1)
+
+    if key == "--" {
+      before = exec.Command(value, flag.Args()[i+2:]...)
+      break;
+    }
 
     matchOptions = append(
       matchOptions,
@@ -57,7 +65,15 @@ func main() {
 
   c := make(chan *dbus.Signal, 10)
   conn.Signal(c)
-
   log.Println("Waiting for signal...")
+
+  if before != nil {
+    before.Stdout = os.Stdout;
+    err = before.Run()
+    if err != nil {
+      log.Fatalln("Error starting command:", err)
+    }
+  }
+
   _ = <-c
 }

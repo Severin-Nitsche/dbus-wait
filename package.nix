@@ -9,7 +9,7 @@ let
   ];
 in buildGoModule {
   pname = "dbus-wait";
-  version = "1.0.0";
+  version = "1.1.0";
 
   src = fs.toSource {
     root = ./.;
